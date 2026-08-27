@@ -1,0 +1,147 @@
+plastic-waste-system/
+│
+├── public/                          # Web root
+│   ├── index.php                    # Entry point
+│   ├── .htaccess                    # Apache config
+│   ├── assets/
+│   │   ├── css/
+│   │   │   ├── style.css           # Global styles
+│   │   │   ├── admin.css           # Admin styles
+│   │   │   └── public.css          # Public styles
+│   │   ├── js/
+│   │   │   ├── app.js              # Main JS
+│   │   │   ├── charts.js           # Chart.js config
+│   │   │   ├── map.js              # Leaflet.js config
+│   │   │   ├── admin.js            # Admin JS
+│   │   │   └── validation.js       # Client validation
+│   │   ├── images/                 # Images
+│   │   └── vendor/                 # Third-party libraries
+│   │       ├── chart.js/
+│   │       └── leaflet.js/
+│   │
+├── app/
+│   ├── Core/                       # Core framework classes
+│   │   ├── Application.php
+│   │   ├── Controller.php
+│   │   ├── Model.php
+│   │   ├── Router.php
+│   │   ├── Database.php
+│   │   ├── SessionManager.php
+│   │   └── Config.php
+│   │
+│   ├── Controllers/                # Controller classes
+│   │   ├── AuthController.php
+│   │   ├── PublicController.php
+│   │   ├── UserController.php
+│   │   ├── AdminController.php
+│   │   ├── WasteController.php
+│   │   ├── ReportController.php
+│   │   └── ApiController.php
+│   │
+│   ├── Models/                     # Model classes
+│   │   ├── User.php
+│   │   ├── Admin.php
+│   │   ├── Collector.php
+│   │   ├── PlasticWaste.php
+│   │   ├── Location.php
+│   │   ├── School.php
+│   │   ├── PlasticType.php
+│   │   ├── AuditLog.php
+│   │   └── Report.php
+│   │
+│   ├── Services/                   # Business logic services
+│   │   ├── AuthService.php
+│   │   ├── EncryptionService.php
+│   │   ├── AuditService.php
+│   │   ├── ReportService.php
+│   │   ├── ExportService.php
+│   │   └── StatisticsService.php
+│   │
+│   ├── Repositories/               # Data access layer
+│   │   ├── UserRepository.php
+│   │   ├── WasteRepository.php
+│   │   ├── LocationRepository.php
+│   │   ├── SchoolRepository.php
+│   │   └── PlasticTypeRepository.php
+│   │
+│   ├── Interfaces/                 # Contracts/Interfaces
+│   │   ├── EncryptionInterface.php
+│   │   ├── RepositoryInterface.php
+│   │   ├── ServiceInterface.php
+│   │   └── ReportInterface.php
+│   │
+│   ├── Middleware/                 # Request middleware
+│   │   ├── AuthMiddleware.php
+│   │   ├── AdminMiddleware.php
+│   │   ├── CsrfMiddleware.php
+│   │   └── CollectorMiddleware.php
+│   │
+│   ├── Validators/                 # Validation classes
+│   │   ├── Validator.php
+│   │   ├── WasteValidator.php
+│   │   ├── UserValidator.php
+│   │   └── LocationValidator.php
+│   │
+│   ├── Helpers/                    # Helper functions
+│   │   ├── SecurityHelper.php
+│   │   ├── FileHelper.php
+│   │   └── DateHelper.php
+│   │
+│   └── Exceptions/                 # Custom exceptions
+│       ├── ValidationException.php
+│       ├── AuthException.php
+│       └── DatabaseException.php
+│
+├── config/                         # Configuration
+│   ├── config.php                  # Main config
+│   ├── database.php                # Database config
+│   ├── encryption.php              # Encryption config
+│   └── constants.php               # Constants
+│
+├── views/                          # View templates
+│   ├── layouts/
+│   │   ├── public.php
+│   │   ├── user.php
+│   │   └── admin.php
+│   ├── public/
+│   │   ├── home.php
+│   │   └── dashboard.php
+│   ├── auth/
+│   │   ├── login.php
+│   │   └── register.php
+│   ├── user/
+│   │   ├── dashboard.php
+│   │   ├── records.php
+│   │   └── submit.php
+│   └── admin/
+│       ├── dashboard.php
+│       ├── users.php
+│       ├── schools.php
+│       ├── locations.php
+│       ├── plastic-types.php
+│       ├── records.php
+│       ├── approvals.php
+│       ├── reports.php
+│       └── audit.php
+│
+├── database/                       # Database files
+│   ├── schema.sql                  # Database schema
+│   ├── seed.sql                    # Initial data
+│   └── migrations/                 # Version control
+│
+├── storage/                        # Storage
+│   ├── uploads/
+│   │   └── evidence/               # Uploaded images
+│   ├── logs/
+│   │   ├── app.log                 # Application logs
+│   │   └── audit.log               # Audit logs
+│   └── exports/                    # Generated exports
+│
+├── tests/                          # Testing
+│   ├── Unit/
+│   └── Integration/
+│
+├── .env                            # Environment variables
+├── .htaccess                       # Root htaccess
+├── README.md                       # Project documentation
+└── composer.json                   # Dependencies
