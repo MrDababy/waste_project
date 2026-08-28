@@ -2,12 +2,13 @@
 /**
  * User Model
  * 
- * Represents system users.
+ * Represents system users with authentication capabilities.
  */
 
 namespace App\Models;
 
 use App\Core\Model;
+use App\Core\Database;
 
 class User extends Model
 {
@@ -27,8 +28,29 @@ class User extends Model
         'last_name',
         'role',
         'is_active',
-        'last_login'
+        'is_verified',
+        'last_login',
+        'last_activity',
+        'login_attempts',
+        'locked_until'
     ];
+
+    /**
+     * @var array Hidden columns
+     */
+    protected static array $hidden = [
+        'password_hash'
+    ];
+
+    /**
+     * @var int Maximum login attempts before lockout
+     */
+    public const MAX_LOGIN_ATTEMPTS = 5;
+
+    /**
+     * @var int Lockout duration in minutes
+     */
+    public const LOCKOUT_DURATION = 15;
 
     /**
      * Find user by username
@@ -52,6 +74,21 @@ class User extends Model
     {
         $sql = "SELECT * FROM users WHERE email = ? LIMIT 1";
         $result = Database::fetch($sql, [$email]);
+        
+        if (!$result) {
+            return null;
+        }
+        
+        return new static($result);
+    }
+
+    /**
+     * Find user by username or email
+     */
+    public static function findByUsernameOrEmail(string $identifier): ?self
+    {
+        $sql = "SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1";
+        $result = Database::fetch($sql, [$identifier, $identifier]);
         
         if (!$result) {
             return null;
@@ -97,6 +134,16 @@ class User extends Model
             $params[] = $filters['status'];
         }
 
+        if (!empty($filters['from_date'])) {
+            $sql .= " AND collection_date >= ?";
+            $params[] = $filters['from_date'];
+        }
+
+        if (!empty($filters['to_date'])) {
+            $sql .= " AND collection_date <= ?";
+            $params[] = $filters['to_date'];
+        }
+
         $sql .= " ORDER BY created_at DESC";
         
         return Database::fetchAll($sql, $params);
@@ -126,5 +173,126 @@ class User extends Model
         
         $result = Database::fetch($sql, [$this->id]);
         return (int)($result['count'] ?? 0);
+    }
+
+    /**
+     * Verify password
+     */
+    public function verifyPassword(string $password): bool
+    {
+        return password_verify($password, $this->password_hash);
+    }
+
+    /**
+     * Set password hash
+     */
+    public function setPassword(string $password): void
+    {
+        $this->password_hash = password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    /**
+     * Check if user is locked out
+     */
+    public function isLocked(): bool
+    {
+        if ($this->locked_until === null) {
+            return false;
+        }
+        
+        $lockedUntil = strtotime($this->locked_until);
+        return time() < $lockedUntil;
+    }
+
+    /**
+     * Get remaining lockout time in minutes
+     */
+    public function getLockoutRemaining(): int
+    {
+        if ($this->locked_until === null) {
+            return 0;
+        }
+        
+        $lockedUntil = strtotime($this->locked_until);
+        $remaining = ceil(($lockedUntil - time()) / 60);
+        return max(0, $remaining);
+    }
+
+    /**
+     * Increment login attempts
+     */
+    public function incrementLoginAttempts(): void
+    {
+        $this->login_attempts = ($this->login_attempts ?? 0) + 1;
+        
+        if ($this->login_attempts >= self::MAX_LOGIN_ATTEMPTS) {
+            $this->locked_until = date('Y-m-d H:i:s', strtotime('+' . self::LOCKOUT_DURATION . ' minutes'));
+            $this->login_attempts = 0;
+        }
+        
+        $this->save();
+    }
+
+    /**
+     * Reset login attempts
+     */
+    public function resetLoginAttempts(): void
+    {
+        $this->login_attempts = 0;
+        $this->locked_until = null;
+        $this->save();
+    }
+
+    /**
+     * Update last activity
+     */
+    public function updateActivity(): void
+    {
+        $this->last_activity = date('Y-m-d H:i:s');
+        $this->save();
+    }
+
+    /**
+     * Update last login
+     */
+    public function updateLastLogin(): void
+    {
+        $this->last_login = date('Y-m-d H:i:s');
+        $this->save();
+    }
+
+    /**
+     * Check if user is verified
+     */
+    public function isVerified(): bool
+    {
+        return (bool)$this->is_verified;
+    }
+
+    /**
+     * Mark as verified
+     */
+    public function markAsVerified(): void
+    {
+        $this->is_verified = true;
+        $this->save();
+    }
+
+    /**
+     * Get user by remember token
+     */
+    public static function findByRememberToken(string $token): ?self
+    {
+        $sql = "SELECT u.* FROM users u
+                JOIN remember_tokens rt ON u.id = rt.user_id
+                WHERE rt.token = ? AND rt.expires_at > NOW()";
+        
+        $result = Database::fetch($sql, [$token]);
+        
+        if (!$result) {
+            return null;
+        }
+        
+        return new static($result);
     }
 }

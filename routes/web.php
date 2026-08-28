@@ -24,13 +24,30 @@ $router->get('/dashboard', 'PublicController@dashboard');
 $router->get('/map', 'PublicController@map');
 
 // ================================================================
-// AUTHENTICATION ROUTES
+// AUTHENTICATION ROUTES (Guest Only)
 // ================================================================
 
-$router->get('/login', 'AuthController@loginForm');
-$router->post('/login', 'AuthController@login');
-$router->get('/register', 'AuthController@registerForm');
-$router->post('/register', 'AuthController@register');
+$router->group('/auth', function($router) {
+    // Login
+    $router->get('/login', 'AuthController@loginForm');
+    $router->post('/login', 'AuthController@login');
+    
+    // Register
+    $router->get('/register', 'AuthController@registerForm');
+    $router->post('/register', 'AuthController@register');
+    
+    // Password Reset
+    $router->get('/forgot-password', 'AuthController@forgotPasswordForm');
+    $router->post('/forgot-password', 'AuthController@forgotPassword');
+    $router->get('/reset-password/{token}', 'AuthController@resetPasswordForm');
+    $router->post('/reset-password', 'AuthController@resetPassword');
+    
+    // Email Verification
+    $router->get('/verify/{token}', 'AuthController@verifyEmail');
+    $router->post('/resend-verification', 'AuthController@resendVerification');
+}, ['App\Middleware\GuestMiddleware']);
+
+// Logout (Authenticated)
 $router->get('/logout', 'AuthController@logout');
 
 // ================================================================
@@ -38,7 +55,17 @@ $router->get('/logout', 'AuthController@logout');
 // ================================================================
 
 $router->group('/user', function($router) {
+    // Dashboard
     $router->get('/dashboard', 'UserController@dashboard');
+    
+    // Profile
+    $router->get('/profile', 'ProfileController@show');
+    $router->get('/profile/edit', 'ProfileController@edit');
+    $router->post('/profile/update', 'ProfileController@update');
+    $router->get('/profile/change-password', 'ProfileController@changePasswordForm');
+    $router->post('/profile/change-password', 'ProfileController@changePassword');
+    
+    // Waste Records
     $router->get('/records', 'UserController@records');
     $router->get('/submit', 'UserController@submitForm');
     $router->post('/submit', 'UserController@submit');
@@ -132,4 +159,4 @@ $router->group('/api', function($router) {
     $router->get('/admin/records', 'ApiController@adminRecords');
     $router->put('/admin/records/{id}', 'ApiController@updateRecord');
     $router->delete('/admin/records/{id}', 'ApiController@deleteRecord');
-}, ['App\Middleware\ApiMiddleware']);
+}, ['App\Middleware\AuthMiddleware']);

@@ -250,3 +250,5 @@ CREATE TABLE IF NOT EXISTS system_settings (
     INDEX idx_is_encrypted (is_encrypted),
     FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE;
